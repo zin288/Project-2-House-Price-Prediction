@@ -1,6 +1,12 @@
 streamlit
 pandas
 scikit-learn
+numpy
 folium
 streamlit_folium
 plotly
+numpy
+sklearn
+patsy
+yellowbrick
+pickle

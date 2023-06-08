@@ -26,7 +26,8 @@ import pickle
 
 st.set_page_config(page_title='Predict Housing Prices', page_icon='🏠', layout='wide', initial_sidebar_state='expanded')
 # Set title of the app
-st.title('🏠 Housing Price Predictor🔮')
+st.title('🏠 :blue[Housing Price Predictor]🔮')
+st.markdown("***Your House, Your Future: Making Informed Real Estate Choices***")
 
 
 ## Preparing data
@@ -49,6 +50,8 @@ df_filtered = df[[   # Categorical data
 # Numerical data only
 df_filtered_num = df[['floor_area_sqm', 'lease_commence_date', 'mall_nearest_distance', 'hawker_nearest_distance', 'mrt_nearest_distance', 
                         'pri_sch_nearest_distance', 'sec_sch_nearest_dist', 'resale_price']]
+# Numerical data only
+df_filtered_cat = df[['town', 'storey_range', 'full_flat_type', 'pri_sch_name']]
 
 
 ## Feature 1: Price Predictor
@@ -102,11 +105,11 @@ flat_list_after = sorted([flat.replace('_', ' ').title() for flat in flat_list_b
 flat_user = st.sidebar.selectbox('Full Flat Type',(flat_list_after))
 full_flat_type = flat_user.replace(' ', '_').lower()
 
-floor_area_sqm = st.sidebar.slider('Floor Area (sqm)', df_filtered['floor_area_sqm'].min(), df_filtered['floor_area_sqm'].max(),df_filtered['floor_area_sqm'].median())
-lease_commence_date = st.sidebar.slider('Lease Commencement Date', df_filtered['lease_commence_date'].min(), df_filtered['lease_commence_date'].max(),df_filtered['lease_commence_date'].max())
-mall_nearest_distance = st.sidebar.slider('Distance of the nearest mall', df_filtered['mall_nearest_distance'].min(), df_filtered['mall_nearest_distance'].max(),df_filtered['mall_nearest_distance'].median())
-hawker_nearest_distance = st.sidebar.slider('Distance of the nearest Hawker',  df_filtered['mall_nearest_distance'].min(), df_filtered['mall_nearest_distance'].max(),df_filtered['mall_nearest_distance'].median())
-mrt_nearest_distance = st.sidebar.slider('Distance of the nearest MRT',df_filtered['mrt_nearest_distance'].min(), df_filtered['mrt_nearest_distance'].max(), df_filtered['mrt_nearest_distance'].median())
+floor_area_sqm = st.sidebar.slider('Floor Area (sqm)', df_filtered['floor_area_sqm'].min(), df_filtered['floor_area_sqm'].max(),df_filtered['floor_area_sqm'].min())
+lease_commence_date = st.sidebar.slider('Lease Commencement Date', df_filtered['lease_commence_date'].min(), df_filtered['lease_commence_date'].max(),df_filtered['lease_commence_date'].min())
+mall_nearest_distance = st.sidebar.slider('Distance of the nearest mall', df_filtered['mall_nearest_distance'].min(), df_filtered['mall_nearest_distance'].max(),df_filtered['mall_nearest_distance'].min())
+hawker_nearest_distance = st.sidebar.slider('Distance of the nearest Hawker',  df_filtered['mall_nearest_distance'].min(), df_filtered['mall_nearest_distance'].max(),df_filtered['mall_nearest_distance'].min())
+mrt_nearest_distance = st.sidebar.slider('Distance of the nearest MRT',df_filtered['mrt_nearest_distance'].min(), df_filtered['mrt_nearest_distance'].max(), df_filtered['mrt_nearest_distance'].min())
 
 # Nearest Primary School: same operations as Town Widget
 primary_school_before = ['geylang_methodist_school',
@@ -202,8 +205,8 @@ primary_school_after = sorted([school.replace('_', ' ').title() for school in pr
 pri_sch_user = st.sidebar.selectbox('Nearest Primary School',(primary_school_after))
 primary_school = pri_sch_user.replace(' ', '_').lower()
 
-pri_sch_nearest_distance = st.sidebar.slider('Distance of the nearest Primary School',  df_filtered['pri_sch_nearest_distance'].min(), df_filtered['pri_sch_nearest_distance'].max(), df_filtered['pri_sch_nearest_distance'].median())
-sec_sch_nearest_dist = st.sidebar.slider('Distance of the nearest Secondary School',  df_filtered['sec_sch_nearest_dist'].min(), df_filtered['sec_sch_nearest_dist'].max(), df_filtered['sec_sch_nearest_dist'].median())
+pri_sch_nearest_distance = st.sidebar.slider('Distance of the nearest Primary School',  df_filtered['pri_sch_nearest_distance'].min(), df_filtered['pri_sch_nearest_distance'].max(), df_filtered['pri_sch_nearest_distance'].min())
+sec_sch_nearest_dist = st.sidebar.slider('Distance of the nearest Secondary School',  df_filtered['sec_sch_nearest_dist'].min(), df_filtered['sec_sch_nearest_dist'].max(), df_filtered['sec_sch_nearest_dist'].min())
 
 
 # Model and Prediction
@@ -274,7 +277,7 @@ diff = 'higher' if delta > 0 else 'lower'
 # delta = formatted_pred * 1.0 - df_compare
 # diff = 'higher'
 st.metric(label="", value=formatted_pred, delta=f"{'{:,.0f}'.format(int(delta))} SGD, compared to units of same housing type", 
-    delta_color='normal', help='## % Accuracy')
+    delta_color='normal', help='Accuracy: 89%')
 
 
 
@@ -299,10 +302,14 @@ st.plotly_chart(fig)
 # Calculate average resale prices by town
 st.subheader("Average Resale Prices by Town")
 
-# Calculate average resale prices by town
-average_prices = df.groupby("town")["resale_price"].mean().sort_values().reset_index()
+filtered_user_df = pd.concat([df_filtered_cat, df_filtered_num['resale_price']], axis=1)
 
-fig = px.bar(average_prices, x="town", y="resale_price", color="town", title="Average Resale Prices by Town")
+selected_column = st.selectbox("Select a column", df_filtered_cat.columns)
+
+# Calculate average resale prices by town
+average_prices = filtered_user_df.groupby(selected_column)["resale_price"].mean().sort_values().reset_index()
+
+fig = px.bar(average_prices, x=selected_column, y="resale_price", color=selected_column, title="Average Resale Prices by Town")
 fig.update_layout(xaxis_title="Town", yaxis_title="Average Resale Price")
 
 st.plotly_chart(fig)
