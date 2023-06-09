@@ -6,7 +6,6 @@ folium
 streamlit_folium
 plotly
 numpy
-sklearn
 patsy
 yellowbrick
 pickle
