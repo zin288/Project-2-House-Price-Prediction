@@ -8,4 +8,3 @@ plotly
 numpy
 patsy
 yellowbrick
-pickle
