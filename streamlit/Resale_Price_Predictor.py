@@ -78,7 +78,7 @@ def main():
         return df, df_filtered, df_filtered_num, df_filtered_cat, user_fr_dict
 
 
-    df, df_filtered, df_filtered_num, df_filtered_cat, user_fr_dict = get_data("../datasets/housing_df.csv")
+    df, df_filtered, df_filtered_num, df_filtered_cat, user_fr_dict = get_data("datasets/housing_df.csv")
 
     # Connectin data to other pages        
     if 'state2' not in st.session_state:
