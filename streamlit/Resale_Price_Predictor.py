@@ -159,7 +159,8 @@ def main():
             return merged_df
 
         # Retreiving LR model file
-        filename = '../models/model1.sav'
+        # filename = '../models/model1.sav'
+        filename = 'models/model1.sav'
         model1 = pickle.load(open(filename, 'rb'))
 
         # Applying OHE onto user input (predictors)
