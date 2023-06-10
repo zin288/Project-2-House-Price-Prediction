@@ -17,9 +17,9 @@ from yellowbrick.regressor import prediction_error
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.compose import ColumnTransformer
 from sklearn.feature_selection import SelectKBest
-import pickle
 
-import os
+import pickle
+from pathlib import Path
 
 # Used to enable df to retain its values across multiple button presses
 class SessionState:
@@ -41,16 +41,8 @@ def main():
     # Using .cache_data so to reduce lag
     @st.cache_data
     def get_data(filename):
-
-        # Get the current working directory
-        cwd = os.getcwd()
-
-        # Construct the file path to the "housing_df.csv" file
-        file_path = os.path.join(cwd, filename)
-
-        # Read the CSV file into a DataFrame
-        df = pd.read_csv(file_path)
-
+        
+        df = pd.read_csv(filename)
 
         # Data needed for model 1
         df_filtered = df[[  # Categorical data:
@@ -78,7 +70,7 @@ def main():
         return df, df_filtered, df_filtered_num, df_filtered_cat, user_fr_dict
 
 
-    df, df_filtered, df_filtered_num, df_filtered_cat, user_fr_dict = get_data("datasets/housing_df.csv")
+    df, df_filtered, df_filtered_num, df_filtered_cat, user_fr_dict = get_data(Path(__file__).parent /'housing_df.csv')
 
     # Connectin data to other pages        
     if 'state2' not in st.session_state:
@@ -120,18 +112,17 @@ def main():
         st.sidebar.subheader('Distance of the nearest...')
         st.sidebar.markdown('<div style="text-align: right;">(Ref: 500 meters ≈ 6 min)</div>', unsafe_allow_html=True)
 
-        pri_sch_nearest_distance = st.sidebar.slider('Primary School',  int(df_filtered['pri_sch_nearest_distance'].min()), int(df_filtered['pri_sch_nearest_distance'].max()), int(df_filtered['pri_sch_nearest_distance'].min()))
-        sec_sch_nearest_dist = st.sidebar.slider('Secondary School',  int(df_filtered['sec_sch_nearest_dist'].min()), int(df_filtered['sec_sch_nearest_dist'].max()), int(df_filtered['sec_sch_nearest_dist'].min()))
-        mall_nearest_distance = st.sidebar.slider('Mall', int(df_filtered['mall_nearest_distance'].min()), int(df_filtered['mall_nearest_distance'].max()),int(df_filtered['mall_nearest_distance'].min()))
-        hawker_nearest_distance = st.sidebar.slider('Hawker',  int(df_filtered['mall_nearest_distance'].min()), int(df_filtered['mall_nearest_distance'].max()),int(df_filtered['mall_nearest_distance'].min()))
-        mrt_nearest_distance = st.sidebar.slider('MRT',int(df_filtered['mrt_nearest_distance'].min()), int(df_filtered['mrt_nearest_distance'].max()), int(df_filtered['mrt_nearest_distance'].min()))
+        pri_sch_nearest_distance = st.sidebar.slider('Primary School',  float(df_filtered['pri_sch_nearest_distance'].min()), float(df_filtered['pri_sch_nearest_distance'].max()), float(df_filtered['pri_sch_nearest_distance'].min()))
+        sec_sch_nearest_dist = st.sidebar.slider('Secondary School',  float(df_filtered['sec_sch_nearest_dist'].min()), float(df_filtered['sec_sch_nearest_dist'].max()), float(df_filtered['sec_sch_nearest_dist'].min()))
+        mall_nearest_distance = st.sidebar.slider('Mall', float(df_filtered['mall_nearest_distance'].min()), float(df_filtered['mall_nearest_distance'].max()),float(df_filtered['mall_nearest_distance'].min()))
+        hawker_nearest_distance = st.sidebar.slider('Hawker',  float(df_filtered['mall_nearest_distance'].min()), float(df_filtered['mall_nearest_distance'].max()),float(df_filtered['mall_nearest_distance'].min()))
+        mrt_nearest_distance = st.sidebar.slider('MRT',float(df_filtered['mrt_nearest_distance'].min()), float(df_filtered['mrt_nearest_distance'].max()), float(df_filtered['mrt_nearest_distance'].min()))
 
         return town, floor_range, full_flat_type, floor_area_sqm, lease_commence_date, primary_school, pri_sch_nearest_distance, sec_sch_nearest_dist, mall_nearest_distance, hawker_nearest_distance, mrt_nearest_distance
 
     town, floor_range, full_flat_type, floor_area_sqm, lease_commence_date, primary_school, pri_sch_nearest_distance, sec_sch_nearest_dist, mall_nearest_distance, hawker_nearest_distance, mrt_nearest_distance = get_predictors()
 
     # Model and Prediction
-
     def price_predictor():
         # List of categorical features to encode and numerical features to select
         cat_features = df_filtered_cat.columns
@@ -159,9 +150,12 @@ def main():
             return merged_df
 
         # Retreiving LR model file
-        # filename = '../models/model1.sav'
-        filename = 'models/model1.sav'
-        model1 = pickle.load(open(filename, 'rb'))
+        try:
+            with open(Path(__file__).parent /'model1.sav', 'rb') as file:
+                model1 = pickle.load(file)
+        except FileNotFoundError:
+            st.error("Failed to load the model file. Make sure it exists in the current directory.")
+
 
         # Applying OHE onto user input (predictors)
         user_input = [[ town, floor_range, full_flat_type, primary_school, floor_area_sqm, 
