@@ -41,20 +41,16 @@ def main():
     # Using .cache_data so to reduce lag
     @st.cache_data
     def get_data(filename):
-        
+
         # Get the current working directory
         cwd = os.getcwd()
 
-        # Go one level up from the current directory
-        parent_directory = os.path.abspath(os.path.join(cwd, os.pardir))
-
-        # Construct the file path to the "datasets" folder
-        datasets_folder = os.path.join(parent_directory, "datasets")
-
         # Construct the file path to the "housing_df.csv" file
-        file_path = os.path.join(datasets_folder, filename)
-        
+        file_path = os.path.join(cwd, filename)
+
+        # Read the CSV file into a DataFrame
         df = pd.read_csv(file_path)
+
 
         # Data needed for model 1
         df_filtered = df[[  # Categorical data:
@@ -82,7 +78,7 @@ def main():
         return df, df_filtered, df_filtered_num, df_filtered_cat, user_fr_dict
 
 
-    df, df_filtered, df_filtered_num, df_filtered_cat, user_fr_dict = get_data('housing_df.csv')
+    df, df_filtered, df_filtered_num, df_filtered_cat, user_fr_dict = get_data("../datasets/housing_df.csv")
 
     # Connectin data to other pages        
     if 'state2' not in st.session_state:
