@@ -111,7 +111,7 @@ def main():
         full_flat_type = flat_user.replace(' ', '_').lower()
 
         floor_area_sqm = st.sidebar.slider('Floor Area (sqm)', int(df_filtered['floor_area_sqm'].min()), int(df_filtered['floor_area_sqm'].max()),int(df_filtered['floor_area_sqm'].min()))
-        lease_commence_date = st.sidebar.slider('Lease Commencement Date', df_filtered['lease_commence_date'].min(), df_filtered['lease_commence_date'].max(),df_filtered['lease_commence_date'].min())
+        lease_commence_date = st.sidebar.slider('Lease Commencement Date', int(df_filtered['lease_commence_date'].min()), int(df_filtered['lease_commence_date'].max()),int(df_filtered['lease_commence_date'].min()))
 
         # Nearest Primary School
         pri_sch_user = st.sidebar.selectbox('Nearest Primary School',(sorted(user_fr_dict['pri_sch_name'])))
