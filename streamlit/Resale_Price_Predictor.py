@@ -120,11 +120,11 @@ def main():
         st.sidebar.subheader('Distance of the nearest...')
         st.sidebar.markdown('<div style="text-align: right;">(Ref: 500 meters ≈ 6 min)</div>', unsafe_allow_html=True)
 
-        pri_sch_nearest_distance = st.sidebar.slider('Primary School',  df_filtered['pri_sch_nearest_distance'].min(), df_filtered['pri_sch_nearest_distance'].max(), df_filtered['pri_sch_nearest_distance'].min())
-        sec_sch_nearest_dist = st.sidebar.slider('Secondary School',  df_filtered['sec_sch_nearest_dist'].min(), df_filtered['sec_sch_nearest_dist'].max(), df_filtered['sec_sch_nearest_dist'].min())
-        mall_nearest_distance = st.sidebar.slider('Mall', df_filtered['mall_nearest_distance'].min(), df_filtered['mall_nearest_distance'].max(),df_filtered['mall_nearest_distance'].min())
-        hawker_nearest_distance = st.sidebar.slider('Hawker',  df_filtered['mall_nearest_distance'].min(), df_filtered['mall_nearest_distance'].max(),df_filtered['mall_nearest_distance'].min())
-        mrt_nearest_distance = st.sidebar.slider('MRT',df_filtered['mrt_nearest_distance'].min(), df_filtered['mrt_nearest_distance'].max(), df_filtered['mrt_nearest_distance'].min())
+        pri_sch_nearest_distance = st.sidebar.slider('Primary School',  int(df_filtered['pri_sch_nearest_distance'].min()), int(df_filtered['pri_sch_nearest_distance'].max()), int(df_filtered['pri_sch_nearest_distance'].min()))
+        sec_sch_nearest_dist = st.sidebar.slider('Secondary School',  int(df_filtered['sec_sch_nearest_dist'].min()), int(df_filtered['sec_sch_nearest_dist'].max()), int(df_filtered['sec_sch_nearest_dist'].min()))
+        mall_nearest_distance = st.sidebar.slider('Mall', int(df_filtered['mall_nearest_distance'].min()), int(df_filtered['mall_nearest_distance'].max()),int(df_filtered['mall_nearest_distance'].min()))
+        hawker_nearest_distance = st.sidebar.slider('Hawker',  int(df_filtered['mall_nearest_distance'].min()), int(df_filtered['mall_nearest_distance'].max()),int(df_filtered['mall_nearest_distance'].min()))
+        mrt_nearest_distance = st.sidebar.slider('MRT',int(df_filtered['mrt_nearest_distance'].min()), int(df_filtered['mrt_nearest_distance'].max()), int(df_filtered['mrt_nearest_distance'].min()))
 
         return town, floor_range, full_flat_type, floor_area_sqm, lease_commence_date, primary_school, pri_sch_nearest_distance, sec_sch_nearest_dist, mall_nearest_distance, hawker_nearest_distance, mrt_nearest_distance
 
