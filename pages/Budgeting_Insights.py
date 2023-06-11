@@ -46,7 +46,7 @@ def get_data(filename):
 
     return df, df_filtered, df_filtered_num, df_filtered_cat, user_fr_dict
 
-df, df_filtered, df_filtered_num, df_filtered_cat, user_fr_dict = get_data(Path(__file__).parent /'housing_df.csv')
+df, df_filtered, df_filtered_num, df_filtered_cat, user_fr_dict = get_data(Path(__file__).parent /'../housing_df.csv')
 
 ## Feature 2: EDA - ----------------------------------------------------------------------------------------------------------------------------------
 @st.cache_data(experimental_allow_widgets=True)
