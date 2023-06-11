@@ -159,13 +159,13 @@ st.subheader("Want more detailed analysis?")
 df_floors = df[df['storey_range'].isin(['01_to_03', '04_to_06', '07_to_09', '10_to_12', '13_to_15', '16_to_18', '19_to_21', '22_to_24', '25_to_27', '28_to_30', '31_to_33',
                                                     '34_to_36', '37_to_39', '40_to_42', '43_to_45', '46_to_48', '49_to_51'])]
 
-df_floors['storey_range'] = df_floors['storey_range'].str.replace('_', ' ')
+df_floors.loc[:, 'storey_range'] = df_floors['storey_range'].str.replace('_', ' ')
 
 # Extract the first 2 digits from the storey_range column
-df_floors['range_digits'] = df_floors['storey_range'].str[:2]
+df_floors.loc[:,'range_digits'] = df_floors['storey_range'].str[:2]
 
 # Sort the dataframe by range_digits in ascending order
-df_floors.sort_values('range_digits', inplace=True)
+df_floors = df_floors.sort_values('range_digits').copy()
 
 
 # Create a boxplot using Plotly
