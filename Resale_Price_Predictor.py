@@ -3,7 +3,6 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import folium
-
 from streamlit_folium import folium_static
 import plotly.express as px
 import plotly.graph_objects as go
@@ -17,16 +16,11 @@ from yellowbrick.regressor import prediction_error
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.compose import ColumnTransformer
 from sklearn.feature_selection import SelectKBest
-
 import pickle
+
 from pathlib import Path
 
-# # Used to enable df to retain its values across multiple button presses
-# class SessionState:
-#     def __init__(self, **kwargs):
-#         self.__dict__.update(kwargs)
-
-# def main():
+global df, df_filtered, df_filtered_num, df_filtered_cat, user_fr_dict
 
 ## Set Page configuration ------------------------------------------------------------------------------------------------------------------------
 
@@ -38,26 +32,25 @@ st.markdown("***Make your real estate plans with technology of the future***")
 
 ## Preparing data ---------------------------------------------------------------------------------------------------------------------------------
 
-# Using .cache_data so to reduce lag
+# Using .cache_data to reduce lag
 @st.cache_data
 def get_data(filename):
-    
-    df = pd.read_csv(filename)
 
-    # Data needed for model 1
+    df =pd.read_csv(filename)
+
     df_filtered = df[[  # Categorical data:
                         'town', 'storey_range', 'full_flat_type', 'pri_sch_name',  
                         # Numerical data:
                         'floor_area_sqm', 'lease_commence_date', 'mall_nearest_distance', 'hawker_nearest_distance', 'mrt_nearest_distance', 
                         'pri_sch_nearest_distance', 'sec_sch_nearest_dist', 'resale_price']]
-    # Model's Numerical data only
+   # Model's Numerical data only
     df_filtered_num = df[[  'floor_area_sqm', 'lease_commence_date', 'mrt_nearest_distance', 'hawker_nearest_distance',
                             'mall_nearest_distance', 'pri_sch_nearest_distance', 'sec_sch_nearest_dist', 'resale_price']]
-    # Model's Categorical data only
+
+    # Model's Categorical data only 
     df_filtered_cat = df[['town', 'storey_range', 'full_flat_type', 'pri_sch_name']]
 
-
-    # user_fr_dict will store the caterogrical values as a user-friendly form,
+    # user_fr_dict will store the caterogrical values in a user-friendly form,
     # by removing '_' and capitalising first letter of each word
     user_fr_dict = {}
 
@@ -69,10 +62,9 @@ def get_data(filename):
 
     return df, df_filtered, df_filtered_num, df_filtered_cat, user_fr_dict
 
-
 df, df_filtered, df_filtered_num, df_filtered_cat, user_fr_dict = get_data(Path(__file__).parent /'housing_df.csv')
 
-## Feature 1a: Price Predictor --------------------------------------------------------------------------------------------------------------------
+## Feature 1: Price Predictor --------------------------------------------------------------------------------------------------------------------
 
 # Taking user input for price prediction
 def get_predictors():
@@ -90,8 +82,7 @@ def get_predictors():
    '37_to_39', '31_to_33', '43_to_45', '40_to_42', '49_to_51', '46_to_48']
     floor_range_user = st.sidebar.selectbox('Storey Range', (sorted(range_3)))
     floor_range = floor_range_user.replace(' ', '_').lower()
-    # Note that floor_range that are grouped into 5 floors (which overlaps with ranges above, and takes up 2.97% of the entire dataset)
-    # are not provided as options, to prevent confusion.
+    # Note that floor_range that are grouped into 5 floors (which overlaps with ranges above, and takes up 2.97% of the entire dataset) are not provided as options, to prevent confusion.
 
     # Full Flat Type 
     flat_user = st.sidebar.selectbox('Full Flat Type',(sorted(user_fr_dict['full_flat_type'])))
@@ -151,7 +142,6 @@ def price_predictor():
     except FileNotFoundError:
         st.error("Failed to load the model file. Make sure it exists in the current directory.")
 
-
     # Applying OHE onto user input (predictors)
     user_input = [[ town, floor_range, full_flat_type, primary_school, floor_area_sqm, 
                     lease_commence_date, mall_nearest_distance, hawker_nearest_distance,
@@ -182,14 +172,17 @@ def price_predictor():
 
 data_info = price_predictor()
 
-## Feature 1b: Predicted Price Comparison ---------------------------------------------------------------------------------------------------------
+## Feature 2: Predicted Price Comparison ---------------------------------------------------------------------------------------------------------
 
 def prediction_comparison():
-    # Initialize or retrieve the session state
+
+    ## Feature 2A: Creating Comparison Table by concatenating new prediction data with the previous one:------------------------------------------
+
+    # Initialize table if it is not in session state
     if 'table' not in st.session_state:
         st.session_state.table = pd.DataFrame(columns=df_filtered.columns)
 
-    # Multiple cols created here so that the buttons can be next to each other
+    # Multiple cols created here so that the buttons can be closer next to each other
     col1, col2, col3, col4, col5 = st.columns(5, gap='small')
 
     # A new row of housing data will get added to the table when this button is pressed
@@ -197,7 +190,7 @@ def prediction_comparison():
         # Concatenate the new DataFrame to the existing value_df
         st.session_state.table = pd.concat([st.session_state.table, data_info], ignore_index=True)
 
-    # Only show the table when housing data is saved
+    # Only show the table when at least 1 set of housing data is saved
     if st.session_state.table.shape[0]>0:
         st.dataframe(st.session_state.table)
 
@@ -205,42 +198,85 @@ def prediction_comparison():
         if col2.button("Reset Table"):
             st.session_state.table = pd.DataFrame(columns=df_filtered.columns)
 
-        # Plotting visualisations for better comparison of properties
+    ## Feature 2B: Plotting visualisations for better comparison of properties ---------------------------------------------------------------
 
+        # Split page into 2 columns - 1 visualisation in each column
         col1, col2 = st.columns(2)
-        pd_compare = st.session_state.table
+        df_compare = st.session_state.table
 
+        ##################################################################################################################################
+        # Approach 1: Plot resale_price against different attributes.
+        # !! Issue with Approach 1: when 2 sets of data have the same categorical value, it results in a stacked bar plot, instead of side by side. 
+        # resulting in a confusing visulaisation
 
+        # col1.subheader("Comparing housing attributes against predicted price")
+        
+        # # Allow the user to select columns and values
+        # selected_column = col1.selectbox("", df_compare.columns)
 
-        col1.subheader("Comparing housing attributes against predicted price")
+        # if selected_column in df_filtered_cat:
+        #     fig = px.bar(df_compare, x=selected_column, y="resale_price", opacity=0.9, color=selected_column, text=df_compare.index)
+
+        # else:
+        #     fig = px.scatter(df_compare, x=selected_column, y="resale_price", opacity=0.9, color=selected_column, text=df_compare.index, color_continuous_scale="YlOrRd")
+        #     # Customize the dot size
+        #     fig.update_traces(marker=dict(size=30), textfont=dict(color='black'))
+
+        ##################################################################################################################################
+
+        # Approach 2: Plot attributes against property index values.
+        # # !! Issue with Appraoch 2: The circle size is supposed to reflect price value, but it is not reflecting that properly
+
+        col1.subheader("Comparing housing attributes of selected properties")
 
         # Allow the user to select columns and values
-        selected_column = col1.selectbox("", pd_compare.columns)
-        # selected_value = st.number_input("Enter a value")
+        selected_column = col1.selectbox("", [col for col in df_compare.columns if col != 'resale_price'])
+
+        # Set the index values as a separate column, to change what the users see as the x-axis title
+        df_compare['property_index'] = df_compare.index
 
         if selected_column in df_filtered_cat:
-            fig = px.bar(pd_compare, x=selected_column, y="resale_price", opacity=0.9, color=selected_column, text=pd_compare.index)
-        else:
-            fig = px.scatter(pd_compare, x=selected_column, y="resale_price", opacity=0.9, color=selected_column, text=pd_compare.index, color_continuous_scale="YlOrRd")
+            # Changing the resale_price values into '$123,456' form
+            df_compare['predicted_price'] = df_compare['resale_price'].apply(lambda x: "${:,.0f}".format(x))
+            fig = px.scatter(df_compare, x='property_index', y=selected_column, opacity=0.9, color=selected_column, text='predicted_price', color_continuous_scale="YlOrRd")
+            
+            # The following section changes the size of the scatter points depending on value of house
+            try:
+                # Calculate the normalized size based on the resale_price column. 
+                normalized_size = ((df_compare['resale_price'] - df_compare['resale_price'].min())  / (df_compare['resale_price'].max() - df_compare['resale_price'].min()))* 100 + 100
+                # Set the size of the dots based on the normalized resale_price values
+                dot_size = normalized_size.values.tolist()  # Adjust the scaling factor as per your preference
+            except:
+                # Program goes into 'except' if denominator is 0 (when only one house is selected). In this case, set size to be 100.
+                dot_size = 100
             # Customize the dot size
-            fig.update_traces(marker=dict(size=30), textfont=dict(color='black'))
+            fig.update_traces(marker=dict(size=dot_size), textfont=dict(color='black'))
+            # Set the x-axis to display only integer values
+            fig.update_xaxes(tickmode="array", tickvals=df_compare.index, ticktext=df_compare.index.astype(int))
+        else:
+            # Create the bar plot
+            fig = px.bar(df_compare, x='property_index', y=selected_column, opacity=0.9)
+            # Set the orientation of the bars to 'v' (vertical)
+            fig.update_traces(orientation='v')
+            # Set the x-axis to display only integer values
+            fig.update_xaxes(tickmode='linear')
 
+        ##################################################################################################################################
+            
+        # Plotting the chart
         col1.plotly_chart(fig)
 
         col2.subheader("Comparing between housing attributes")
-        # Allow the user to select columns and values
-        selected_column2 = col2.selectbox("Select attribute 1", pd_compare.columns)
-        selected_column3 = col2.selectbox("Select attribute 2", pd_compare.columns)
+
+        selected_column2 = col2.selectbox("Select attribute 1", df_compare.columns)
+        selected_column3 = col2.selectbox("Select attribute 2", df_compare.columns)
 
         if selected_column2 in df_filtered_cat:
-            fig = px.bar(pd_compare, x=selected_column2, y=selected_column3, opacity=0.9, color=selected_column, text=pd_compare.index)
+            fig = px.bar(df_compare, x=selected_column2, y=selected_column3, opacity=0.9, color=selected_column, text=df_compare.index)
         if selected_column2 in df_filtered_num:
-            fig = px.scatter(pd_compare, x=selected_column2, y=selected_column3, opacity=0.9, color=selected_column, text=pd_compare.index, color_continuous_scale="YlOrRd")
+            fig = px.scatter(df_compare, x=selected_column2, y=selected_column3, opacity=0.9, color=selected_column, text=df_compare.index, color_continuous_scale="YlOrRd")
             # Customize the dot size
             fig.update_traces(marker=dict(size=30), textfont=dict(color='black'))
         col2.plotly_chart(fig)
 
 prediction_comparison()
-
-# if __name__ == "__main__":
-#     main()

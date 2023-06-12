@@ -8,48 +8,20 @@ import plotly.express as px
 import plotly.graph_objects as go
 from pathlib import Path
 
+from Resale_Price_Predictor import df
+from Resale_Price_Predictor import df_filtered
+from Resale_Price_Predictor import df_filtered_num
+from Resale_Price_Predictor import df_filtered_cat
+from Resale_Price_Predictor import user_fr_dict
+
+
 # ## Set Page configuration -------------------------------------------------------------------------------------------------------------------------
 
 st.title('🏠 :blue[Your House, Your Future]🔮')
 st.markdown("***Make your real estate plans with technology of the future***")
 
+## Feature 3: EDA - ----------------------------------------------------------------------------------------------------------------------------------
 
-## Preparing data -----------------------------------------------------------------------------------------------------------------------------------
-
-# Using .cache_data so to reduce lag
-@st.cache_data
-def get_data(filename):
-    df = pd.read_csv(filename)
-
-    # Data needed for model 1
-    df_filtered = df[[  # Categorical data:
-                        'town', 'storey_range', 'full_flat_type', 'pri_sch_name',  
-                        # Numerical data:
-                        'floor_area_sqm', 'lease_commence_date', 'mall_nearest_distance', 'hawker_nearest_distance', 'mrt_nearest_distance', 
-                        'pri_sch_nearest_distance', 'sec_sch_nearest_dist', 'resale_price']]
-    # Model's Numerical data only
-    df_filtered_num = df[[  'floor_area_sqm', 'lease_commence_date', 'mrt_nearest_distance', 'hawker_nearest_distance',
-                            'mall_nearest_distance', 'pri_sch_nearest_distance', 'sec_sch_nearest_dist', 'resale_price']]
-    # Model's Categorical data only
-    df_filtered_cat = df[['town', 'storey_range', 'full_flat_type', 'pri_sch_name']]
-
-
-    # user_fr_dict will store the caterogrical values as a user-friendly form,
-    # by removing '_' and capitalising first letter of each word
-    user_fr_dict = {}
-
-    # Iterate over each column in df_filtered_cat, get the unique values, and add to dictionary
-    for col in df_filtered_cat.columns:
-        unique_values = df_filtered_cat[col].unique()
-        transformed_unique_values = [value.replace('_', ' ').title() for value in unique_values]
-        user_fr_dict[col] = transformed_unique_values
-
-    return df, df_filtered, df_filtered_num, df_filtered_cat, user_fr_dict
-
-df, df_filtered, df_filtered_num, df_filtered_cat, user_fr_dict = get_data(Path(__file__).parent /'../housing_df.csv')
-
-## Feature 2: EDA - ----------------------------------------------------------------------------------------------------------------------------------
-@st.cache_data(experimental_allow_widgets=True)
 def show_eda():
 	# Set budget
 	st.title("Past Resale Transaction Insights")
@@ -70,7 +42,6 @@ def show_eda():
 	selected_column = st.selectbox("Select an attribute", df_filtered.columns)
 
 	# Filter the DataFrame based on the user's selection
-	# filtered_user_df = df_filtered[selected_column]
 	filtered_user_df = pd.concat([df_filtered_cat, df[[ 'mrt_name', 'sec_sch_name']]], axis=1)
 	filtered_user_df = pd.concat([df_filtered_cat, df_filtered['resale_price']], axis=1)
 
@@ -91,20 +62,20 @@ def show_eda():
 
 		fig = px.bar(filtered_prices, x=selected_column, y="resale_price", color=selected_column)
 
-		fig.update_layout(width=1200, height=600, margin=dict(l=200, r=0, t=50, b=50, pad=4))
+		fig.update_layout(width=1200, height=600)
 	st.plotly_chart(fig)
 
 	return budget_min, budget_max
 
 budget_min, budget_max = show_eda()
 
-## Feature 3: Map -----------------------------------------------------------------------------------------------------------------------------------------
-@st.cache_data(experimental_allow_widgets=True)
+## Feature 4: Map -----------------------------------------------------------------------------------------------------------------------------------------
 def show_map():
 	# Get unique town values from the DataFrame
 	towns = df['town'].unique().tolist()
 
 	st.subheader("A closer look at each transaction")
+	st.markdown("Note: Red markers are within budget range")
 
 	# Create a selection widget for the town
 	selected_town = st.selectbox("Select a town", towns)
@@ -131,7 +102,7 @@ def show_map():
 	    price = row['resale_price']
 	    info = f"Town: {town_name}<br>Address: {address}<br>Resale Price: ${price}"
 
-	        # Check if the resale price is within the budget range
+	       # Check if the resale price is within the budget range
 	    if budget_min <= price <= budget_max:
 	        # Create a marker at the latitude and longitude coordinates with red color
 	        marker = folium.Marker([lat, lon], popup=folium.Popup(info, max_width=250), icon=folium.Icon(color='red'))
@@ -139,77 +110,47 @@ def show_map():
 	        # Create a marker at the latitude and longitude coordinates with default color
 	        marker = folium.Marker([lat, lon], popup=folium.Popup(info, max_width=250))
 
-	    # # Create a marker at the latitude and longitude coordinates
-	    # marker = folium.Marker([lat, lon], popup=folium.Popup(info, max_width=250))
-
-
-
 	    marker.add_to(m)
 
-	# Display the map using Streamlit
 	st.markdown("**Click on the marker to see unit information**")
-	# st.markdown("Dots represent transactions")
 	folium_static(m)
 
 show_map()
-## Feature 4: Other EDAs --------------------------------------------------------------------------------------------------------------------------------
 
-st.subheader("Want more detailed analysis?")
+## Feature 5: Other EDAs --------------------------------------------------------------------------------------------------------------------------------
 
-df_floors = df[df['storey_range'].isin(['01_to_03', '04_to_06', '07_to_09', '10_to_12', '13_to_15', '16_to_18', '19_to_21', '22_to_24', '25_to_27', '28_to_30', '31_to_33',
-                                                    '34_to_36', '37_to_39', '40_to_42', '43_to_45', '46_to_48', '49_to_51'])]
+def show_boxplot():
 
-df_floors.loc[:, 'storey_range'] = df_floors['storey_range'].str.replace('_', ' ')
+	st.subheader("Want more detailed analysis?")
 
-# Extract the first 2 digits from the storey_range column
-df_floors.loc[:,'range_digits'] = df_floors['storey_range'].str[:2]
+	df_floors = df[df['storey_range'].isin(['01_to_03', '04_to_06', '07_to_09', '10_to_12', '13_to_15', '16_to_18', '19_to_21', '22_to_24', '25_to_27', '28_to_30', '31_to_33',
+	                                                    '34_to_36', '37_to_39', '40_to_42', '43_to_45', '46_to_48', '49_to_51'])]
 
-# Sort the dataframe by range_digits in ascending order
-df_floors = df_floors.sort_values('range_digits').copy()
+	df_floors.loc[:, 'storey_range'] = df_floors['storey_range'].str.replace('_', ' ')
 
+	# Extract the first 2 digits from the storey_range column
+	df_floors.loc[:,'range_digits'] = df_floors['storey_range'].str[:2]
 
-# Create a boxplot using Plotly
-fig = px.box(df_floors, x='storey_range', y='resale_price', color='storey_range',
-             color_discrete_sequence=px.colors.sequential.Blues)
-fig.update_xaxes(tickangle=45)
-# Customize the layout
-fig.update_layout(
-    title='Boxplot of Resale Price by Storey Range',
-    xaxis_title='Storey Range',
-    yaxis_title='Resale Price'
-)
+	# Sort the dataframe by range_digits in ascending order
+	df_floors = df_floors.sort_values('range_digits').copy()
 
-# Display the plot using Streamlit
-st.plotly_chart(fig)
+	# Create a boxplot using Plotly
+	fig = px.box(df_floors, x='storey_range', y='resale_price', color='storey_range',
+	             color_discrete_sequence=px.colors.sequential.Blues)
+	fig.update_xaxes(tickangle=45)
 
+	# Customize the layout
+	fig.update_layout(
+	    title='Boxplot of Resale Price by Storey Range',
+	    xaxis_title='Storey Range',
+	    yaxis_title='Resale Price'
+	)
 
+	st.plotly_chart(fig)
 
-
-# # Create the regression plot using Plotly
-# fig = px.scatter(df_floors, x='lease_commence_date', y='resale_price', trendline='ols')
-
-# # Customize the trendline color and thickness
-# fig.update_traces(selector=dict(name='trendline'), line_color='maroon', line_width=3)
-
-# # Customize the layout
-# fig.update_layout(
-#     title='Flat Lease Commence Date vs Resale Price',
-#     xaxis_title='Lease Commence Date',
-#     yaxis_title='Resale Price (SGD)',
-# )
-
-# # Display the plot in Streamlit
-# st.plotly_chart(fig)
-
-
+show_boxplot()
 
 st.title('🔧 Premium content coming your way... ')
 
 # Set title of the app
-#st.title('🏠 Page 1🔮')
 st.markdown("Please support our efforts in empowering all in their real estate journey ❤️")
-
-
-
-# Define the layout of your Streamlit app
-# st.title("Resale Price Insights")
