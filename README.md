@@ -1,4 +1,4 @@
-# ![](https://ga-dash.s3.amazonaws.com/production/assets/logo-9f88ae6c9c3871690e33280fcf557f33.png) Project 2: Your House Your Future: Singapore Resale Housing Predictor using Linear, Ridge, and Lasso Modelling
+# ![](https://ga-dash.s3.amazonaws.com/production/assets/logo-9f88ae6c9c3871690e33280fcf557f33.png) Project 2: Your House Your Future - Singapore Resale Housing Predictor using Linear, Ridge, and Lasso Modelling
 
 ### **Try Out our Housing Price Predictor Streamlit App by clicking the link below.**
 ### [HDB Resale Price Predictor Application with 11 Most Important Factors](https://resale-housing-price-predictor.streamlit.app/)
@@ -7,13 +7,12 @@
 <br>
 
 ## Content Directory:
-- Background and Problem Statement
-- Data Import & Cleaning
-- Feature Engineering
-- Exploratory Data Analysis
-- [Modeling](#Modeling)
+- [Background and Problem Statement](#Background)
+- [Datasets](#Data-Dictionary)
+- [Feature Selection](Summary-of-Feature-Selection-from-Each-Model)
+- [Modeling Summary](#Summary-of-Model)
 - [Kaggle Submission](#Kaggle-Submission)
-- [Key Insights & Recommendations](#Key-Insights-&-Recommendations)
+- [Key Insights & Recommendations](#Key-Insights)
 
 <br>
 
