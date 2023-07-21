@@ -1,0 +1,9 @@
+streamlit
+pandas
+scikit-learn
+numpy
+folium
+streamlit_folium
+plotly
+patsy
+yellowbrick
