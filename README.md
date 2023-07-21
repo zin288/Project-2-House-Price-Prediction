@@ -9,7 +9,7 @@
 ## Content Directory:
 - [Background and Problem Statement](#Background)
 - [Datasets](#Data-Dictionary)
-- [Feature Selection](Summary-of-Feature-Selection-from-Each-Model)
+- [Feature Selection](#Summary-of-Feature-Selection-from-Each-Model)
 - [Modeling Summary](#Summary-of-Model)
 - [Kaggle Submission](#Kaggle-Submission)
 - [Key Insights & Recommendations](#Key-Insights)
