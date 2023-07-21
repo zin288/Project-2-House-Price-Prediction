@@ -1,7 +1,7 @@
 # ![](https://ga-dash.s3.amazonaws.com/production/assets/logo-9f88ae6c9c3871690e33280fcf557f33.png) Project 2: Your-House-Your-Future-Linear-Ridge-Lasso-Modelling
 
 ### **Try Out our Housing Price Predictor Streamlit App by clicking the link below.**
-### [HDB Resale Price Predictor Application with 11 Most Important Factors](https://project-2streamlit-application-house-price-predictionr-n4fym7.streamlit.app/)
+### [HDB Resale Price Predictor Application with 11 Most Important Factors](https://resale-housing-price-predictor.streamlit.app/)
 ![Streamlit App](https://raw.githubusercontent.com/khammingfatt/Project-2-Your-House-Your-Future-Linear-Ridge-Lasso-Modelling/main/Streamlit%20Application.png)
 
 <br>
