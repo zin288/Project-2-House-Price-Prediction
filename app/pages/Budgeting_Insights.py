@@ -70,7 +70,7 @@ def show_eda():
 
 	# Allow the user to select columns and values
 	selected_column = st.selectbox("Select an attribute", df_filtered.columns)
-    st.write(selected_column)
+    st.write("Selected columns:",selected_column)
 
 	# Filter the DataFrame based on the user's selection
 	# filtered_user_df = df_filtered[selected_column]
