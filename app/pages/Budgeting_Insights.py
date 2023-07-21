@@ -1,3 +1,122 @@
+# # Import Libraries
+# import streamlit as st
+# import pandas as pd
+# import numpy as np
+# import folium
+# from streamlit_folium import folium_static
+# import plotly.express as px
+# import plotly.graph_objects as go
+
+# from pathlib import Path
+
+
+# # ## Set Page configuration -------------------------------------------------------------------------------------------------------------------------
+
+# st.title('🏠 :blue[Your House, Your Future]🔮')
+# st.markdown("***Make your real estate plans with technology of the future***")
+
+
+# ## Preparing data -----------------------------------------------------------------------------------------------------------------------------------
+
+# # Using .cache_data so to reduce lag
+# @st.cache_data
+# def get_data(filename):
+# 	df = pd.read_csv(filename)
+
+# 	# Data needed for model 1
+# 	df_filtered = df[[  # Categorical data:
+# 						'town', 'storey_range', 'full_flat_type', 'pri_sch_name',  
+# 						# Numerical data:
+# 						'floor_area_sqm', 'lease_commence_date', 'mall_nearest_distance', 'hawker_nearest_distance', 'mrt_nearest_distance', 
+# 						'pri_sch_nearest_distance', 'sec_sch_nearest_dist', 'resale_price']]
+# 	# Model's Numerical data only
+# 	df_filtered_num = df[[  'floor_area_sqm', 'lease_commence_date', 'mrt_nearest_distance', 'hawker_nearest_distance',
+# 							'mall_nearest_distance', 'pri_sch_nearest_distance', 'sec_sch_nearest_dist', 'resale_price']]
+# 	# Model's Categorical data only
+# 	df_filtered_cat = df[['town', 'storey_range', 'full_flat_type', 'pri_sch_name']]
+
+
+# 	# user_fr_dict will store the caterogrical values as a user-friendly form,
+# 	# by removing '_' and capitalising first letter of each word
+# 	user_fr_dict = {}
+
+# 	# Iterate over each column in df_filtered_cat, get the unique values, and add to dictionary
+# 	for col in df_filtered_cat.columns:
+# 		unique_values = df_filtered_cat[col].unique()
+# 		transformed_unique_values = [value.replace('_', ' ').title() for value in unique_values]
+# 		user_fr_dict[col] = transformed_unique_values
+
+# 	return df, df_filtered, df_filtered_num, df_filtered_cat, user_fr_dict
+
+# df, df_filtered, df_filtered_num, df_filtered_cat, user_fr_dict = get_data(Path(__file__).parent /'../housing_df.csv')
+
+# ## Feature 2: EDA - ----------------------------------------------------------------------------------------------------------------------------------
+# @st.cache_data(experimental_allow_widgets=True)
+# def show_eda():
+# 	# Set budget
+# 	st.title("Past Resale Transaction Insights")
+# 	st.subheader("Select Budget Range")
+
+# 	# After a user inputs a budget, only feature values with resale_price within this range will be shown
+
+# 	# Create a range slider widget for the budget
+# 	budget_min, budget_max = st.slider("", int(df['resale_price'].min()), int(df['resale_price'].max()), (0, int(df['resale_price'].max())))
+
+# 	# Display the selected budget range
+# 	st.write("Selected Budget Range:", budget_min, '-', budget_max)
+
+# 	# Define the range of y-values to color in red
+# 	y_range = [budget_min, budget_max] 
+
+# 	# Allow the user to select columns and values
+# 	selected_column = st.selectbox("Select an attribute", df_filtered.columns)
+# 	st.write("Selected columns:",selected_column)
+
+# 	# Filter the DataFrame based on the user's selection
+# 	# filtered_user_df = df_filtered[selected_column]
+# 	filtered_user_df = pd.concat([df_filtered_cat, df[[ 'mrt_name', 'sec_sch_name']]], axis=1)
+# 	filtered_user_df = pd.concat([df_filtered_cat, df_filtered['resale_price']], axis=1)
+
+# 	if selected_column not in df_filtered_cat:
+# 		# Create a new column indicating whether each data point falls within the y-value range
+# 		df_filtered['color'] = np.where((df_filtered['resale_price'] >= y_range[0]) &
+# 												(df_filtered['resale_price'] <= y_range[1]),
+# 												'maroon', 'blue')
+# 		fig = px.scatter(df_filtered, x=selected_column, y="resale_price", color='color')
+
+# 	else:
+# 		# Calculate average resale prices by col
+# 		average_prices = filtered_user_df.groupby(selected_column)["resale_price"].mean().sort_values().reset_index()
+# 		filtered_prices = average_prices[
+# 		(average_prices['resale_price'] >= budget_min) &
+# 		(average_prices['resale_price'] <= budget_max)
+# 	]
+
+# 		fig = px.bar(filtered_prices, x=selected_column, y="resale_price", color=selected_column)
+
+# 		fig.update_layout(width=1200, height=600, margin=dict(l=200, r=0, t=50, b=50, pad=4))
+# 	st.plotly_chart(fig)
+
+# 	return budget_min, budget_max
+
+# budget_min, budget_max = show_eda()
+
+# if 'budget_min' not in st.session_state:
+#     st.session_state['budget_min'] = budget_min
+    
+# if 'budget_max' not in st.session_state:
+#     st.session_state['budget_max'] = budget_max
+
+
+
+
+
+
+
+
+
+
+
 # Import Libraries
 import streamlit as st
 import pandas as pd
@@ -6,8 +125,13 @@ import folium
 from streamlit_folium import folium_static
 import plotly.express as px
 import plotly.graph_objects as go
-
 from pathlib import Path
+
+from Resale_Price_Predictor import df
+from Resale_Price_Predictor import df_filtered
+from Resale_Price_Predictor import df_filtered_num
+from Resale_Price_Predictor import df_filtered_cat
+from Resale_Price_Predictor import user_fr_dict
 
 
 # ## Set Page configuration -------------------------------------------------------------------------------------------------------------------------
@@ -15,43 +139,8 @@ from pathlib import Path
 st.title('🏠 :blue[Your House, Your Future]🔮')
 st.markdown("***Make your real estate plans with technology of the future***")
 
+## Feature 3: EDA - ----------------------------------------------------------------------------------------------------------------------------------
 
-## Preparing data -----------------------------------------------------------------------------------------------------------------------------------
-
-# Using .cache_data so to reduce lag
-@st.cache_data
-def get_data(filename):
-	df = pd.read_csv(filename)
-
-	# Data needed for model 1
-	df_filtered = df[[  # Categorical data:
-						'town', 'storey_range', 'full_flat_type', 'pri_sch_name',  
-						# Numerical data:
-						'floor_area_sqm', 'lease_commence_date', 'mall_nearest_distance', 'hawker_nearest_distance', 'mrt_nearest_distance', 
-						'pri_sch_nearest_distance', 'sec_sch_nearest_dist', 'resale_price']]
-	# Model's Numerical data only
-	df_filtered_num = df[[  'floor_area_sqm', 'lease_commence_date', 'mrt_nearest_distance', 'hawker_nearest_distance',
-							'mall_nearest_distance', 'pri_sch_nearest_distance', 'sec_sch_nearest_dist', 'resale_price']]
-	# Model's Categorical data only
-	df_filtered_cat = df[['town', 'storey_range', 'full_flat_type', 'pri_sch_name']]
-
-
-	# user_fr_dict will store the caterogrical values as a user-friendly form,
-	# by removing '_' and capitalising first letter of each word
-	user_fr_dict = {}
-
-	# Iterate over each column in df_filtered_cat, get the unique values, and add to dictionary
-	for col in df_filtered_cat.columns:
-		unique_values = df_filtered_cat[col].unique()
-		transformed_unique_values = [value.replace('_', ' ').title() for value in unique_values]
-		user_fr_dict[col] = transformed_unique_values
-
-	return df, df_filtered, df_filtered_num, df_filtered_cat, user_fr_dict
-
-df, df_filtered, df_filtered_num, df_filtered_cat, user_fr_dict = get_data(Path(__file__).parent /'../housing_df.csv')
-
-## Feature 2: EDA - ----------------------------------------------------------------------------------------------------------------------------------
-@st.cache_data(experimental_allow_widgets=True)
 def show_eda():
 	# Set budget
 	st.title("Past Resale Transaction Insights")
@@ -70,42 +159,45 @@ def show_eda():
 
 	# Allow the user to select columns and values
 	selected_column = st.selectbox("Select an attribute", df_filtered.columns)
-	st.write("Selected columns:",selected_column)
 
 	# Filter the DataFrame based on the user's selection
-	# filtered_user_df = df_filtered[selected_column]
 	filtered_user_df = pd.concat([df_filtered_cat, df[[ 'mrt_name', 'sec_sch_name']]], axis=1)
 	filtered_user_df = pd.concat([df_filtered_cat, df_filtered['resale_price']], axis=1)
 
 	if selected_column not in df_filtered_cat:
 		# Create a new column indicating whether each data point falls within the y-value range
 		df_filtered['color'] = np.where((df_filtered['resale_price'] >= y_range[0]) &
-												(df_filtered['resale_price'] <= y_range[1]),
-												'maroon', 'blue')
+		                                     (df_filtered['resale_price'] <= y_range[1]),
+		                                     'maroon', 'blue')
 		fig = px.scatter(df_filtered, x=selected_column, y="resale_price", color='color')
 
 	else:
 		# Calculate average resale prices by col
 		average_prices = filtered_user_df.groupby(selected_column)["resale_price"].mean().sort_values().reset_index()
 		filtered_prices = average_prices[
-		(average_prices['resale_price'] >= budget_min) &
-		(average_prices['resale_price'] <= budget_max)
+	    (average_prices['resale_price'] >= budget_min) &
+	    (average_prices['resale_price'] <= budget_max)
 	]
 
 		fig = px.bar(filtered_prices, x=selected_column, y="resale_price", color=selected_column)
 
-		fig.update_layout(width=1200, height=600, margin=dict(l=200, r=0, t=50, b=50, pad=4))
+		fig.update_layout(width=1200, height=600)
 	st.plotly_chart(fig)
 
 	return budget_min, budget_max
 
 budget_min, budget_max = show_eda()
 
-if 'budget_min' not in st.session_state:
-    st.session_state['budget_min'] = budget_min
-    
-if 'budget_max' not in st.session_state:
-    st.session_state['budget_max'] = budget_max
+
+
+
+
+
+
+
+
+
+
 
 ## Feature 4: Other EDAs --------------------------------------------------------------------------------------------------------------------------------
 
